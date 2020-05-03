@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="counties">
+
+	<insert id="insert">
+		insert into counties(name,curConfirm,confirmed,cured,died) values(#{name},#{curConfirm},#{confirmed},#{cured},#{died});
+	</insert>
+
+	<update id="update">
+		update counties set curConfirm = #{curConfirm} , confirmed = #{confirmed} , cured = #{cured} , died = #{died} where name = #{name}
+	</update>
+
+	<delete id="delete" parameterType="int">
+		delete from counties where id = #{id}
+	</delete>
+	
+	<select id="selectOne" parameterType="int" resultMap="RM_Country">
+		select 
+			c.id cid,
+			c.name country,
+			p.name province,
+			p.confirmed pconfirmed,
+			p.cured pcured,
+			p.died pdied
+		from counties c
+			left outer join provinces p on c.id = p.cid
+		where c.id = #{id}
+	</select>
+
+	<select id="selectAll" resultMap="RM_Country">
+		select 
+			c.id cid,
+			c.name country,
+			p.name province,
+			p.confirmed pconfirmed,
+			p.cured pcured,
+			p.died pdied
+		from counties c
+			left outer join provinces p on c.id = p.cid
+	</select>
+
+	<!-- 分页查询 -->
+	<!-- 1.当前页显示的数据，比如第一页显示的数据 -->
+	<!-- 这里直接写*，是因为没考虑连接其他表，如果要连接就要像上面一样 -->
+	<!-- 这里写limit是因为传参的变量RowBounds对象，参数是offset和limit -->
+	<select id="selectPage" resultType="_Country">
+		select
+			*
+		from counties 
+			limit #{offset},#{limit}
+	</select>
+	<!-- 2.计算页数，这里查询的是一共有多少条数据，方便计算一共有多少页 -->
+	<select id="selectCount" resultType="int">
+		select
+			count(1)
+		from counties
+	</select>
+	
+	
+	<!-- 自定义结果映射，因为"u.id uid"类似于这种重新命名，所以APP运行时会识别不了 -->
+	<resultMap type="_Country" id="RM_Country">
+		<id property="id" column="cid"/>
+		<result property="name" column="country"/>
+		<!-- 映射一对多关联关系
+			这里是Country.java里的List<Province>成员变量中Province,所以ofType="_Province"-->
+		<collection property="provinces" ofType="_Province">	
+			<id property="id" column="pid"/>
+			<result property="name" column="province"/>
+			<result property="confirmed" column="pconfirmed"/>
+			<result property="cured" column="pcured"/>
+			<result property="died" column="pdied"/>
+		</collection>
+	</resultMap>
+</mapper>

@@ -1,0 +1,28 @@
+@CHARSET "UTF-8";
+
+body{
+#border: 0px solid blue;
+	margin: 10px auto;
+}
+
+table {
+	border: 1px solid cadetblue;
+	border-collapse: collapse;
+	height: 300px;
+	width: 800px;
+	margin: 0px auto;
+}
+
+table td {
+	text-align: center;
+	height: 45px;
+}
+
+table tr:nth-child(even) {
+	background-color: beige;
+}
+
+table tr:FIRST-CHILD {
+	background-color: darkcyan;
+	color: white;
+}

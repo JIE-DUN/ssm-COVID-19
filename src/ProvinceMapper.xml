@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="provinces">
+
+	<insert id="insert">
+		insert into provinces(name,confirmed,cured,died,cid) values(#{name},#{confirmed},#{cured},#{died},#{cid});
+	</insert>
+
+	<update id="update">
+		update provinces set confirmed = #{confirmed} , cured = #{cured} , died = #{died} where name = #{name}
+	</update>
+
+	<delete id="delete" parameterType="int">
+		delete from provinces where id = #{id}
+	</delete>
+	
+	<!-- 按照id查询一个目标 -->
+	<select id="selectOne" parameterType="int" resultMap="RM_Province">
+		select 
+			c.id cid,
+			c.name country,
+			p.id pid,
+			p.name province,
+			p.confirmed pconfirmed,
+			p.cured pcured,
+			p.died pdied
+		from provinces p
+			left outer join counties c on p.cid = c.id
+		where p.id = #{id}
+	</select>
+	
+	<!-- 查询所有目标 -->
+	<select id="selectAll" resultMap="RM_Province">
+		select 
+			c.id cid,
+			c.name country,
+			p.id pid,
+			p.name province,
+			p.confirmed pconfirmed,
+			p.cured pcured,
+			p.died pdied
+		from provinces p
+			left outer join counties c on p.cid = c.id
+	</select>
+	
+	<!-- 分页查询 -->
+	<!-- 1.当前页显示的数据，比如第一页显示的数据 -->
+	<!-- 这里直接写*，是因为没考虑连接其他表，如果要连接就要像上面一样 -->
+	<!-- 这里写limit是因为传参的变量RowBounds对象，参数是offset和limit -->
+	<select id="selectPage" parameterType="int" resultType="_Province">
+		select
+			*
+		from provinces 
+		where 
+			cid = #{id}
+	</select>
+	<!-- 2.计算页数，这里查询的是一共有多少条数据，方便计算一共有多少页 -->
+	<select id="selectCount" parameterType="int" resultType="int">
+		select
+			count(1)
+		from provinces
+		where
+			cid = #{id}
+	</select>
+	
+	<!-- 自定义结果映射，因为"c.id cid"类似于这种重新命名，所以APP运行时会识别不了 -->
+	<resultMap type="_Province" id="RM_Province">
+		<id property="id" column="pid"/>
+		<result property="name" column="province"/>
+		<result property="confirmed" column="pconfirmed"/>
+		<result property="cured" column="pcured"/>
+		<result property="died" column="pdied"/>
+		<association property="country" javaType="_Country">
+			<id property="id" column="cid"/>
+			<result property="name" column="country"/>
+		</association>
+	</resultMap>
+	
+</mapper>
